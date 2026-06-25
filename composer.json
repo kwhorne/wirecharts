@@ -1,0 +1,40 @@
+{
+    "name": "wirecharts/wirecharts",
+    "description": "Flux-style chart components for Laravel Livewire 4. Highcharts-gallery breadth, powered by Apache ECharts.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "livewire", "flux", "charts", "echarts", "blade"],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "illuminate/view": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "WireCharts\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WireCharts\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "WireCharts\\WireChartsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
