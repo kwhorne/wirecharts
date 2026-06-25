@@ -103,3 +103,9 @@ it('unlocks the clock gauge with a valid license', function () {
         ->toContain('wireChartClock(')
         ->not->toContain('wirecharts-locked');
 });
+
+it('verifies the changelog covers every tag', function () {
+    $this->artisan('wirecharts:changelog')
+        ->assertSuccessful()
+        ->expectsOutputToContain('1.1.0');
+});

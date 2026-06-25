@@ -1,9 +1,21 @@
 {
     "name": "wirecharts/wirecharts",
-    "description": "Flux-style chart components for Laravel Livewire 4. Highcharts-gallery breadth, powered by Apache ECharts.",
+    "description": "Flux-style chart components for Laravel Livewire 4. 30+ chart types in one elegant package.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["laravel", "livewire", "flux", "charts", "echarts", "blade"],
+    "homepage": "https://wirecharts.io",
+    "authors": [
+        {
+            "name": "kwhorne",
+            "homepage": "https://github.com/kwhorne"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/kwhorne/wirecharts/issues",
+        "source": "https://github.com/kwhorne/wirecharts",
+        "docs": "https://wirecharts.io/docs"
+    },
+    "keywords": ["laravel", "livewire", "flux", "charts", "blade"],
     "require": {
         "php": "^8.2",
         "illuminate/support": "^11.0|^12.0|^13.0",

@@ -5,6 +5,7 @@ namespace WireCharts;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use WireCharts\Console\ActivateCommand;
+use WireCharts\Console\ChangelogCommand;
 use WireCharts\Licensing\License;
 
 class WireChartsServiceProvider extends ServiceProvider
@@ -30,7 +31,7 @@ class WireChartsServiceProvider extends ServiceProvider
         $this->registerPublishing();
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ActivateCommand::class]);
+            $this->commands([ActivateCommand::class, ChangelogCommand::class]);
         }
     }
 

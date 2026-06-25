@@ -18,15 +18,15 @@ document.addEventListener('alpine:init', () => {
         return node;
     }
 
-    // ECharts may load via a deferred <script>, which can resolve after Alpine
+    // The chart engine may load via a deferred <script>, which can resolve after Alpine
     // boots. Wait for it before initialising so charts always render.
-    function whenECharts(callback, tries = 0) {
+    function whenEngine(callback, tries = 0) {
         if (typeof echarts !== 'undefined') {
             callback();
         } else if (tries < 200) {
-            setTimeout(() => whenECharts(callback, tries + 1), 25);
+            setTimeout(() => whenEngine(callback, tries + 1), 25);
         } else {
-            console.error('[WireCharts] ECharts failed to load.');
+            console.error('[WireCharts] chart engine failed to load.');
         }
     }
 
@@ -90,7 +90,7 @@ document.addEventListener('alpine:init', () => {
         ...core(option, themeMode),
 
         render() {
-            whenECharts(() => {
+            whenEngine(() => {
                 this.mountChart();
 
                 // Live-bind to a Livewire property holding the series (optional).
@@ -118,7 +118,7 @@ document.addEventListener('alpine:init', () => {
         _timer: null,
 
         render() {
-            whenECharts(() => this.mountChart());
+            whenEngine(() => this.mountChart());
         },
 
         values() {
@@ -209,7 +209,7 @@ document.addEventListener('alpine:init', () => {
         _clock: null,
 
         render() {
-            whenECharts(() => {
+            whenEngine(() => {
                 this.mountChart();
                 this.tick();
                 this._clock = setInterval(() => this.tick(), 1000);

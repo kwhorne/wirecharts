@@ -12,7 +12,7 @@ class WireCharts
 {
     public static function styles(): string
     {
-        // ECharts renders to canvas/SVG and needs no external stylesheet.
+        // The chart engine renders to canvas/SVG and needs no external stylesheet.
         // Reserved for future theme CSS variables.
         return '';
     }

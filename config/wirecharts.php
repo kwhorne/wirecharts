@@ -7,7 +7,7 @@ return [
     | Asset delivery mode
     |--------------------------------------------------------------------------
     |
-    | "cdn"    - Load Apache ECharts from a CDN and inline the Alpine glue.
+    | "cdn"    - Load the chart engine from a CDN and inline the Alpine glue.
     |            Zero build step, great for getting started.
     | "bundle" - Load the bundled/published assets from public/vendor/wirecharts.
     |            Run `php artisan vendor:publish --tag=wirecharts-assets`.
@@ -17,10 +17,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 3D support (echarts-gl)
+    | 3D support
     |--------------------------------------------------------------------------
     |
-    | Loads the echarts-gl extension required by the bar3d, scatter3d and
+    | Loads the 3D extension required by the bar3d, scatter3d and
     | surface components. Adds ~600KB, so it is opt-in.
     |
     */

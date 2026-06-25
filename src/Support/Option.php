@@ -3,7 +3,7 @@
 namespace WireCharts\Support;
 
 /**
- * Builds Apache ECharts option arrays from friendly component props.
+ * Builds chart option arrays from friendly component props.
  * Each method returns a PHP array that is JSON-encoded into the chart.
  */
 class Option
@@ -370,7 +370,7 @@ class Option
         ];
     }
 
-    // ---- 3D (requires echarts-gl) ---------------------------------------
+    // ---- 3D (requires the GL extension) ---------------------------------
 
     public static function bar3d(array $args): array
     {

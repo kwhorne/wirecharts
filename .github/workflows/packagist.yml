@@ -1,0 +1,26 @@
+name: Update Packagist
+
+# Notifies Packagist to pull the latest version whenever main is updated or a
+# new version tag is pushed, so releases publish automatically.
+#
+# Requires two repository secrets:
+#   PACKAGIST_USERNAME - your Packagist username
+#   PACKAGIST_TOKEN    - your Packagist API token (Profile -> Show API Token)
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  packagist:
+    name: Notify Packagist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Packagist update
+        run: |
+          curl --fail --silent --show-error \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
+            --data '{"repository":{"url":"https://github.com/kwhorne/wirecharts"}}'
