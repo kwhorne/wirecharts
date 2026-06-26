@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.2] - 2026-06-26
+
+### Added
+- New `<chart:spline-inverted>` component — a spline with inverted axes (category axis vertical), ideal for profiles such as temperature by altitude.
+- New `<chart:line-labels>` component — a line chart that labels each series at the end of its line instead of using a legend.
+- New `<chart:line-log>` component — a line chart with a logarithmic y-axis for values spanning several orders of magnitude.
+- New `<chart:line-race>` component — an animated line race that reveals each series progressively, with a replay control.
+- New `<chart:line-animated>` component — a line chart with a custom entrance animation (configurable easing and staggered point delay).
+- New `<chart:line-forecast>` component — a line chart that draws actual values solid and forecast values as a dashed line over a shaded region.
+- New `<chart:line-annotated>` component — a line chart with labelled annotation pins on chosen points and an optional average line.
+- New `<chart:line-boost>` component — a line chart tuned for very large datasets with downsampling and zoom controls.
+- New `<chart:line-time>` component — a time series line over a datetime axis with zoom/pan.
+- New `<chart:spline-time>` component — a smooth spline over an irregular datetime axis with visible measurement points.
+- New `<chart:spline-bands>` component — a spline with coloured horizontal plot bands marking value zones.
+
+### Fixed
+- Restored the original release dates for 1.0.0 and 1.1.0 (the 25th).
+
 ## [1.2.1] - 2026-06-26
 
 ### Fixed

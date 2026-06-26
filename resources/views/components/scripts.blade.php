@@ -236,5 +236,51 @@ document.addEventListener('alpine:init', () => {
             this.teardownChart();
         },
     }));
+
+    // Line race: reveal each series' points progressively for an animated draw.
+    Alpine.data('wireChartRace', (option, themeMode = 'auto', config = {}) => ({
+        ...core(option, themeMode),
+        _timer: null,
+        _full: [],
+        _max: 0,
+        _interval: config.interval || 400,
+
+        render() {
+            whenEngine(() => {
+                this._full = (this.option.series || []).map((s) => Array.isArray(s.data) ? s.data.slice() : []);
+                this._max = this._full.reduce((m, d) => Math.max(m, d.length), 0);
+                this.reveal(1);
+                this.mountChart();
+                this.play();
+            });
+        },
+
+        reveal(step) {
+            (this.option.series || []).forEach((s, i) => {
+                s.data = this._full[i].slice(0, step);
+            });
+        },
+
+        play() {
+            clearInterval(this._timer);
+            let step = 1;
+            this.reveal(step);
+            this.chart?.setOption({ series: this.option.series });
+
+            this._timer = setInterval(() => {
+                step++;
+                this.reveal(step);
+                this.chart?.setOption({ series: this.option.series });
+                if (step >= this._max) {
+                    clearInterval(this._timer);
+                }
+            }, this._interval);
+        },
+
+        destroy() {
+            clearInterval(this._timer);
+            this.teardownChart();
+        },
+    }));
 });
 </script>

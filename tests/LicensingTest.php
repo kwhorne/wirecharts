@@ -117,3 +117,91 @@ it('gates the spline component without a license', function () {
     withLicense(VALID_KEY);
     expect(Blade::render('<chart:spline />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
 });
+
+it('gates the inverted spline without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:spline-inverted />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:spline-inverted />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-labels component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-labels />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-labels />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-log component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-log />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-log />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-race component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-race />'))->toContain('wirecharts-locked')->not->toContain('wireChartRace(');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-race />'))->toContain('wireChartRace(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-animated component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-animated />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-animated />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-forecast component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-forecast />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-forecast />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-annotated component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-annotated />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-annotated />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-boost component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-boost />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-boost />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the line-time component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:line-time />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:line-time />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the spline-time component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:spline-time />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:spline-time />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the spline-bands component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:spline-bands />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:spline-bands />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});

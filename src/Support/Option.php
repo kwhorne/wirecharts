@@ -94,6 +94,464 @@ class Option
     }
 
     /**
+     * Spline with inverted axes: a smooth line drawn with the category axis
+     * running vertically and the value axis horizontally — ideal for profiles
+     * such as temperature by altitude.
+     */
+    public static function splineInverted(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+        $size = $args['symbolSize'] ?? 6;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => true,
+            'showSymbol' => true,
+            'symbolSize' => $size,
+            'lineStyle' => ['width' => 3],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'value'],
+            'yAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Line with end labels: each series is named at the end of its line instead
+     * of using a legend — ideal for comparing several labelled trends.
+     */
+    public static function lineLabels(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? false;
+
+        $formatter = '@@function (params) { return params.seriesName; }@@';
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 3],
+            'emphasis' => ['focus' => 'series'],
+            'endLabel' => [
+                'show' => true,
+                'formatter' => $formatter,
+                'fontWeight' => 'bold',
+            ],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => 90, 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Line with a logarithmic y-axis — ideal when values span several orders
+     * of magnitude.
+     */
+    public static function lineLog(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? false;
+        $legend = $args['legend'] ?? true;
+        $logBase = $args['logBase'] ?? 10;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => true,
+            'symbolSize' => 6,
+            'lineStyle' => ['width' => 3],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'log', 'logBase' => $logBase],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Line race: a multi-series line whose points are revealed progressively
+     * (animated client-side), with each line labelled at its leading end.
+     */
+    public static function lineRace(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+
+        $formatter = '@@function (params) { return params.seriesName; }@@';
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 3],
+            'emphasis' => ['focus' => 'series'],
+            'endLabel' => ['show' => true, 'formatter' => $formatter, 'fontWeight' => 'bold'],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => 90, 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Line with a custom entrance animation: the line draws in with a chosen
+     * easing and a staggered per-point delay.
+     */
+    public static function lineAnimated(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $legend = $args['legend'] ?? true;
+        $duration = $args['duration'] ?? 1200;
+        $easing = $args['easing'] ?? 'cubicOut';
+
+        $delay = '@@function (idx) { return idx * 60; }@@';
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => true,
+            'symbolSize' => 7,
+            'lineStyle' => ['width' => 3],
+            'animationDuration' => $duration,
+            'animationEasing' => $easing,
+            'animationDelay' => $delay,
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'animationDuration' => $duration,
+            'animationEasing' => $easing,
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Line with a forecast: actual values are drawn solid, forecast values
+     * continue as a dashed line over a lightly shaded region.
+     */
+    public static function lineForecast(array $args): array
+    {
+        $categories = $args['categories'] ?? [];
+        $actual = array_values($args['actual'] ?? []);
+        $forecast = array_values($args['forecast'] ?? []);
+        $name = $args['name'] ?? 'Actual';
+        $forecastName = $args['forecastName'] ?? 'Forecast';
+        $smooth = $args['smooth'] ?? true;
+
+        $actualCount = count($actual);
+
+        $actualData = array_merge($actual, array_fill(0, count($forecast), null));
+
+        $forecastData = array_merge(
+            array_fill(0, max(0, $actualCount - 1), null),
+            $actualCount ? [end($actual)] : [],
+            $forecast,
+        );
+
+        $forecastSeries = [
+            'name' => $forecastName,
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'data' => $forecastData,
+            'lineStyle' => ['width' => 3, 'type' => 'dashed'],
+        ];
+
+        if ($actualCount > 0 && ! empty($categories)) {
+            $forecastSeries['markArea'] = [
+                'silent' => true,
+                'itemStyle' => ['color' => 'rgba(127,127,127,0.08)'],
+                'data' => [[
+                    ['xAxis' => $categories[$actualCount - 1] ?? null],
+                    ['xAxis' => $categories[count($categories) - 1] ?? null],
+                ]],
+            ];
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => true],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => [
+                [
+                    'name' => $name,
+                    'type' => 'line',
+                    'smooth' => $smooth,
+                    'showSymbol' => false,
+                    'data' => $actualData,
+                    'lineStyle' => ['width' => 3],
+                ],
+                $forecastSeries,
+            ],
+        ];
+    }
+
+    /**
+     * Line with annotations: labelled marker pins on chosen points, plus an
+     * optional average reference line.
+     */
+    public static function lineAnnotated(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $legend = $args['legend'] ?? true;
+        $annotations = $args['annotations'] ?? [];
+        $average = $args['average'] ?? false;
+
+        $markPointData = array_map(fn ($a) => [
+            'coord' => [$a['x'] ?? null, $a['y'] ?? null],
+            'value' => $a['text'] ?? '',
+        ], array_values($annotations));
+
+        $seriesOption = [];
+        foreach (array_values($series) as $i => $s) {
+            $item = array_merge([
+                'type' => 'line',
+                'smooth' => $smooth,
+                'showSymbol' => true,
+                'symbolSize' => 6,
+                'lineStyle' => ['width' => 3],
+            ], $s);
+
+            if ($i === 0 && $markPointData) {
+                $item['markPoint'] = [
+                    'symbol' => 'pin',
+                    'symbolSize' => 48,
+                    'label' => ['fontSize' => 11, 'color' => '#fff'],
+                    'data' => $markPointData,
+                ];
+            }
+
+            if ($i === 0 && $average) {
+                $item['markLine'] = [
+                    'data' => [['type' => 'average', 'name' => 'Average']],
+                ];
+            }
+
+            $seriesOption[] = $item;
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Line tuned for very large datasets: LTTB downsampling, large-mode
+     * rendering, animation disabled, and zoom/pan controls.
+     */
+    public static function lineBoost(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $sampling = $args['sampling'] ?? 'lttb';
+        $zoom = $args['zoom'] ?? true;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'showSymbol' => false,
+            'sampling' => $sampling,
+            'large' => true,
+            'largeThreshold' => 2000,
+            'lineStyle' => ['width' => 1.5],
+        ], $s), array_values($series));
+
+        $option = [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'animation' => false,
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => $zoom ? 60 : '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => empty($categories)
+                ? ['type' => 'value', 'boundaryGap' => false]
+                : ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+
+        if ($zoom) {
+            $option['dataZoom'] = [
+                ['type' => 'inside'],
+                ['type' => 'slider'],
+            ];
+        }
+
+        return $option;
+    }
+
+    /**
+     * Time series: a line over a datetime axis. Data points are [date, value]
+     * pairs, with optional zoom/pan.
+     */
+    public static function lineTime(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $smooth = $args['smooth'] ?? false;
+        $zoom = $args['zoom'] ?? true;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 2.5],
+        ], $s), array_values($series));
+
+        $option = [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => $zoom ? 60 : '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'time'],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+
+        if ($zoom) {
+            $option['dataZoom'] = [
+                ['type' => 'inside'],
+                ['type' => 'slider'],
+            ];
+        }
+
+        return $option;
+    }
+
+    /**
+     * Spline over a datetime axis with irregular intervals: points are placed
+     * by their actual time and marked with symbols.
+     */
+    public static function splineTime(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $zoom = $args['zoom'] ?? true;
+        $legend = $args['legend'] ?? true;
+        $size = $args['symbolSize'] ?? 6;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => true,
+            'showSymbol' => true,
+            'symbolSize' => $size,
+            'lineStyle' => ['width' => 3],
+        ], $s), array_values($series));
+
+        $option = [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => $zoom ? 60 : '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'time'],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+
+        if ($zoom) {
+            $option['dataZoom'] = [
+                ['type' => 'inside'],
+                ['type' => 'slider'],
+            ];
+        }
+
+        return $option;
+    }
+
+    /**
+     * Spline with horizontal plot bands: coloured background zones across the
+     * y-axis (e.g. value ranges), each optionally labelled.
+     */
+    public static function splineBands(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $legend = $args['legend'] ?? true;
+        $bands = $args['bands'] ?? [];
+
+        $bandData = array_map(function ($b) {
+            $start = ['yAxis' => $b['from'] ?? 0];
+
+            if (! empty($b['color'])) {
+                $start['itemStyle'] = ['color' => $b['color']];
+            }
+            if (! empty($b['label'])) {
+                $start['label'] = [
+                    'show' => true,
+                    'formatter' => $b['label'],
+                    'position' => 'insideStartTop',
+                    'color' => '#888',
+                    'fontSize' => 11,
+                ];
+            }
+
+            return [$start, ['yAxis' => $b['to'] ?? 0]];
+        }, array_values($bands));
+
+        $seriesOption = [];
+        foreach (array_values($series) as $i => $s) {
+            $item = array_merge([
+                'type' => 'line',
+                'smooth' => $smooth,
+                'showSymbol' => false,
+                'lineStyle' => ['width' => 3],
+            ], $s);
+
+            if ($i === 0 && $bandData) {
+                $item['markArea'] = ['silent' => true, 'data' => $bandData];
+            }
+
+            $seriesOption[] = $item;
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
      * Scatter / bubble. Data points are [x, y] or [x, y, size] for bubbles.
      */
     public static function scatter(array $args, bool $bubble = false): array

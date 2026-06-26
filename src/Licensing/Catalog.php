@@ -26,6 +26,17 @@ class Catalog
      */
     public const PRO = [
         'spline',
+        'spline-inverted',
+        'line-labels',
+        'line-log',
+        'line-race',
+        'line-animated',
+        'line-forecast',
+        'line-annotated',
+        'line-boost',
+        'line-time',
+        'spline-time',
+        'spline-bands',
         'donut',
         'bubble',
         'gauge',
