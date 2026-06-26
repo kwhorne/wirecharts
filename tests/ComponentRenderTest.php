@@ -536,3 +536,19 @@ it('sorts a pareto chart with a cumulative line', function () {
 
     expect($html)->toContain('wireChart(')->toContain('\u0022Cumulative\u0022')->toContain('\u0022yAxisIndex\u0022:1');
 });
+
+it('renders pie variations', function (string $tag, string $needle) {
+    $html = Blade::render("<chart:{$tag} :series=\"\$s\" :labels=\"\$l\" />", [
+        's' => [40, 25, 20, 15],
+        'l' => ['Chrome', 'Safari', 'Edge', 'Firefox'],
+    ]);
+
+    expect($html)->toContain('wireChart(')->toContain('\u0022type\u0022:\u0022pie\u0022')->toContain($needle);
+})->with([
+    ['pie-semi', '\u0022startAngle\u0022:180'],
+    ['pie-labels', '\u0022labelLine\u0022'],
+    ['pie-monochrome', '\u0022itemStyle\u0022'],
+    ['pie-gradient', '\u0022radial\u0022'],
+    ['pie-variable', '\u0022roseType\u0022:\u0022radius\u0022'],
+    ['pie-rose', '\u0022roseType\u0022:\u0022area\u0022'],
+]);

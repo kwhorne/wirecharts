@@ -1111,6 +1111,159 @@ class Option
         ];
     }
 
+    // ---- Pie variations ---------------------------------------------------
+
+    /**
+     * Semi-circle donut: slices fill the top half of a ring.
+     */
+    public static function pieSemi(array $args): array
+    {
+        $data = static::normalizePie($args['series'] ?? [], $args['labels'] ?? []);
+        $legend = $args['legend'] ?? true;
+
+        $sum = array_sum(array_map(fn ($d) => is_array($d) ? ($d['value'] ?? 0) : $d, $data));
+        $data[] = [
+            'value' => $sum,
+            'name' => '',
+            'itemStyle' => ['color' => 'transparent'],
+            'label' => ['show' => false],
+            'tooltip' => ['show' => false],
+            'emphasis' => ['disabled' => true],
+        ];
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => $legend, 'bottom' => 0],
+            'series' => [[
+                'type' => 'pie',
+                'radius' => ['45%', '75%'],
+                'center' => ['50%', '70%'],
+                'startAngle' => 180,
+                'label' => ['show' => true, 'formatter' => '{b}'],
+                'data' => $data,
+            ]],
+        ];
+    }
+
+    /**
+     * Pie with external data labels and leader lines.
+     */
+    public static function pieLabels(array $args): array
+    {
+        $data = static::normalizePie($args['series'] ?? [], $args['labels'] ?? []);
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => false],
+            'series' => [[
+                'type' => 'pie',
+                'radius' => '55%',
+                'center' => ['50%', '50%'],
+                'label' => ['show' => true, 'position' => 'outside', 'formatter' => '{b}: {d}%'],
+                'labelLine' => ['show' => true, 'length' => 16, 'length2' => 12],
+                'data' => $data,
+            ]],
+        ];
+    }
+
+    /**
+     * Monochrome pie: slices in shades of a single hue.
+     */
+    public static function pieMonochrome(array $args): array
+    {
+        $data = static::normalizePie($args['series'] ?? [], $args['labels'] ?? []);
+        [$r, $g, $b] = $args['color'] ?? [249, 115, 22];
+        $legend = $args['legend'] ?? true;
+        $n = count($data);
+
+        foreach ($data as $i => $d) {
+            $t = $n > 1 ? ($i / ($n - 1)) * 0.8 : 0;
+            $rr = (int) round($r + $t * (255 - $r));
+            $gg = (int) round($g + $t * (255 - $g));
+            $bb = (int) round($b + $t * (255 - $b));
+            $data[$i] = array_merge(is_array($d) ? $d : ['value' => $d], ['itemStyle' => ['color' => "rgb({$rr},{$gg},{$bb})"]]);
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => $legend, 'bottom' => 0],
+            'series' => [[
+                'type' => 'pie',
+                'radius' => '70%',
+                'data' => $data,
+            ]],
+        ];
+    }
+
+    /**
+     * Gradient pie: each slice filled with a radial gradient.
+     */
+    public static function pieGradient(array $args): array
+    {
+        $data = static::normalizePie($args['series'] ?? [], $args['labels'] ?? []);
+        $legend = $args['legend'] ?? true;
+        $donut = $args['donut'] ?? true;
+        $palette = [[249, 115, 22], [14, 165, 233], [34, 197, 94], [168, 85, 247], [239, 68, 68], [234, 179, 8]];
+
+        foreach ($data as $i => $d) {
+            [$r, $g, $b] = $palette[$i % count($palette)];
+            $data[$i] = array_merge(is_array($d) ? $d : ['value' => $d], [
+                'itemStyle' => ['color' => [
+                    'type' => 'radial', 'x' => 0.5, 'y' => 0.5, 'r' => 0.75,
+                    'colorStops' => [
+                        ['offset' => 0, 'color' => "rgba({$r},{$g},{$b},0.55)"],
+                        ['offset' => 1, 'color' => "rgb({$r},{$g},{$b})"],
+                    ],
+                ]],
+            ]);
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => $legend, 'bottom' => 0],
+            'series' => [[
+                'type' => 'pie',
+                'radius' => $donut ? ['45%', '72%'] : '72%',
+                'itemStyle' => ['borderRadius' => 6, 'borderColor' => 'transparent', 'borderWidth' => 2],
+                'data' => $data,
+            ]],
+        ];
+    }
+
+    /**
+     * Variable radius pie (roseType 'radius'): each slice's radius encodes value.
+     */
+    public static function pieVariable(array $args): array
+    {
+        return static::roseChart($args, 'radius');
+    }
+
+    /**
+     * Nightingale rose (roseType 'area'): slice area encodes value.
+     */
+    public static function pieRose(array $args): array
+    {
+        return static::roseChart($args, 'area');
+    }
+
+    protected static function roseChart(array $args, string $roseType): array
+    {
+        $data = static::normalizePie($args['series'] ?? [], $args['labels'] ?? []);
+        $legend = $args['legend'] ?? true;
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => $legend, 'bottom' => 0],
+            'series' => [[
+                'type' => 'pie',
+                'radius' => ['20%', '75%'],
+                'roseType' => $roseType,
+                'itemStyle' => ['borderRadius' => 5],
+                'data' => $data,
+            ]],
+        ];
+    }
+
     // ---- Column & bar -----------------------------------------------------
 
     /**

@@ -317,3 +317,11 @@ it('gates the new column & bar components without a license', function (string $
     withLicense(VALID_KEY);
     expect(Blade::render("<chart:{$tag} />"))->toContain('wireChart(')->not->toContain('wirecharts-locked');
 })->with(['column-stacked', 'bar-stacked', 'column-percent', 'bar-percent', 'column-negative', 'column-rotated', 'column-range', 'bar-range', 'histogram', 'lollipop', 'pareto']);
+
+it('gates the new pie components without a license', function (string $tag) {
+    withLicense(null);
+    expect(Blade::render("<chart:{$tag} />"))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render("<chart:{$tag} />"))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+})->with(['pie-semi', 'pie-labels', 'pie-monochrome', 'pie-gradient', 'pie-variable', 'pie-rose']);

@@ -25,6 +25,12 @@ class Catalog
      * Commercial components unlocked by a Pro license.
      */
     public const PRO = [
+        'pie-semi',
+        'pie-labels',
+        'pie-monochrome',
+        'pie-gradient',
+        'pie-variable',
+        'pie-rose',
         'spline',
         'spline-inverted',
         'line-labels',

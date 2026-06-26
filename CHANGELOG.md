@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.5] - 2026-06-26
+
+Introduces the Pie charts family.
+
+### Added
+- New `<chart:pie-semi>` component — a semi-circle donut.
+- New `<chart:pie-labels>` component — a pie with external data labels and leader lines.
+- New `<chart:pie-monochrome>` component — a pie in shades of a single hue.
+- New `<chart:pie-gradient>` component — a pie with radial-gradient slices.
+- New `<chart:pie-variable>` component — a variable-radius pie (slice radius encodes value).
+- New `<chart:pie-rose>` component — a Nightingale rose chart.
+
 ## [1.2.4] - 2026-06-26
 
 Introduces the Column & bar charts family.
