@@ -1111,6 +1111,295 @@ class Option
         ];
     }
 
+    // ---- Column & bar -----------------------------------------------------
+
+    /**
+     * Shared builder for stacked column/bar charts, optionally normalised to 100%.
+     */
+    protected static function stackedColumns(array $args, bool $horizontal, bool $percent): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+
+        if ($percent) {
+            $values = array_map(fn ($s) => array_values($s['data'] ?? []), array_values($series));
+            $count = $values ? max(array_map('count', $values)) : 0;
+            for ($j = 0; $j < $count; $j++) {
+                $sum = 0;
+                foreach ($values as $row) {
+                    $sum += $row[$j] ?? 0;
+                }
+                foreach ($values as $i => $row) {
+                    $values[$i][$j] = $sum > 0 ? round(($row[$j] ?? 0) / $sum * 100, 2) : 0;
+                }
+            }
+            $series = array_values($series);
+            foreach ($series as $i => $s) {
+                $series[$i]['data'] = $values[$i];
+            }
+        }
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'bar',
+            'stack' => 'total',
+            'emphasis' => ['focus' => 'series'],
+        ], $s), array_values($series));
+
+        $cat = ['type' => 'category', 'data' => $categories];
+        $val = $percent
+            ? ['type' => 'value', 'max' => 100, 'axisLabel' => ['formatter' => '{value}%']]
+            : ['type' => 'value'];
+
+        $tooltip = ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']];
+        if ($percent) {
+            $tooltip['valueFormatter'] = '@@function (v) { return v + "%"; }@@';
+        }
+
+        return [
+            'tooltip' => $tooltip,
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => $horizontal ? $val : $cat,
+            'yAxis' => $horizontal ? $cat : $val,
+            'series' => $seriesOption,
+        ];
+    }
+
+    public static function columnStacked(array $args): array
+    {
+        return static::stackedColumns($args, false, false);
+    }
+
+    public static function barStacked(array $args): array
+    {
+        return static::stackedColumns($args, true, false);
+    }
+
+    public static function columnPercent(array $args): array
+    {
+        return static::stackedColumns($args, false, true);
+    }
+
+    public static function barPercent(array $args): array
+    {
+        return static::stackedColumns($args, true, true);
+    }
+
+    /**
+     * Column chart with positive/negative bars coloured by sign.
+     */
+    public static function columnNegative(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? false;
+        $positive = $args['positiveColor'] ?? '#22c55e';
+        $negative = $args['negativeColor'] ?? '#ef4444';
+
+        $color = '@@function (p) { return p.value < 0 ? \''.$negative.'\' : \''.$positive.'\'; }@@';
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'bar',
+            'itemStyle' => ['color' => $color, 'borderRadius' => [3, 3, 0, 0]],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Column chart with rotated category labels — useful for many or long labels.
+     */
+    public static function columnRotated(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+        $rotate = $args['rotate'] ?? 45;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'bar',
+            'emphasis' => ['focus' => 'series'],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'axisLabel' => ['rotate' => $rotate, 'interval' => 0]],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Floating range bars from a low to a high value (vertical or horizontal).
+     */
+    protected static function rangeColumns(array $args, bool $horizontal): array
+    {
+        $categories = $args['categories'] ?? [];
+        $low = array_values($args['low'] ?? []);
+        $high = array_values($args['high'] ?? []);
+        $name = $args['name'] ?? 'Range';
+
+        $diff = [];
+        foreach ($low as $i => $l) {
+            $h = $high[$i] ?? $l;
+            $diff[] = ($l === null || $h === null) ? null : $h - $l;
+        }
+
+        $cat = ['type' => 'category', 'data' => $categories];
+        $val = ['type' => 'value'];
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => $horizontal ? $val : $cat,
+            'yAxis' => $horizontal ? $cat : $val,
+            'series' => [
+                [
+                    'name' => 'low',
+                    'type' => 'bar',
+                    'stack' => 'range',
+                    'silent' => true,
+                    'itemStyle' => ['color' => 'transparent'],
+                    'data' => $low,
+                ],
+                [
+                    'name' => $name,
+                    'type' => 'bar',
+                    'stack' => 'range',
+                    'itemStyle' => ['borderRadius' => 4],
+                    'data' => $diff,
+                ],
+            ],
+        ];
+    }
+
+    public static function columnRange(array $args): array
+    {
+        return static::rangeColumns($args, false);
+    }
+
+    public static function barRange(array $args): array
+    {
+        return static::rangeColumns($args, true);
+    }
+
+    /**
+     * Histogram: bins a flat list of numeric values into frequency columns.
+     */
+    public static function histogram(array $args): array
+    {
+        $data = array_values(array_filter($args['data'] ?? [], 'is_numeric'));
+        $bins = max(1, (int) ($args['bins'] ?? 10));
+
+        $labels = [];
+        $counts = array_fill(0, $bins, 0);
+
+        if ($data) {
+            $min = min($data);
+            $max = max($data);
+            $width = ($max - $min) ?: 1;
+            $step = $width / $bins;
+
+            foreach ($data as $v) {
+                $idx = (int) floor(($v - $min) / $step);
+                $idx = max(0, min($bins - 1, $idx));
+                $counts[$idx]++;
+            }
+            for ($i = 0; $i < $bins; $i++) {
+                $lo = round($min + $i * $step, 1);
+                $hi = round($min + ($i + 1) * $step, 1);
+                $labels[] = "{$lo}\u{2013}{$hi}";
+            }
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $labels],
+            'yAxis' => ['type' => 'value'],
+            'series' => [[
+                'type' => 'bar',
+                'barCategoryGap' => '1%',
+                'data' => $counts,
+            ]],
+        ];
+    }
+
+    /**
+     * Lollipop chart: a thin stick topped with a circular marker per value.
+     */
+    public static function lollipop(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $values = $series[0]['data'] ?? [];
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories],
+            'yAxis' => ['type' => 'value'],
+            'series' => [
+                ['type' => 'bar', 'barWidth' => 2, 'silent' => true, 'data' => $values],
+                ['type' => 'scatter', 'symbolSize' => 16, 'data' => $values],
+            ],
+        ];
+    }
+
+    /**
+     * Pareto chart: columns sorted descending with a cumulative percentage line.
+     */
+    public static function pareto(array $args): array
+    {
+        $categories = $args['categories'] ?? [];
+        $data = array_values($args['data'] ?? []);
+
+        $pairs = [];
+        foreach ($data as $i => $v) {
+            $pairs[] = [$categories[$i] ?? $i, $v];
+        }
+        usort($pairs, fn ($a, $b) => $b[1] <=> $a[1]);
+
+        $cats = array_column($pairs, 0);
+        $vals = array_column($pairs, 1);
+        $total = array_sum($vals) ?: 1;
+
+        $cumulative = [];
+        $running = 0;
+        foreach ($vals as $v) {
+            $running += $v;
+            $cumulative[] = round($running / $total * 100, 1);
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'shadow']],
+            'legend' => ['show' => true],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $cats],
+            'yAxis' => [
+                ['type' => 'value'],
+                ['type' => 'value', 'max' => 100, 'axisLabel' => ['formatter' => '{value}%'], 'splitLine' => ['show' => false]],
+            ],
+            'series' => [
+                ['name' => $args['name'] ?? 'Count', 'type' => 'bar', 'data' => $vals],
+                ['name' => 'Cumulative', 'type' => 'line', 'yAxisIndex' => 1, 'smooth' => false, 'symbolSize' => 6, 'data' => $cumulative],
+            ],
+        ];
+    }
+
     /**
      * Scatter / bubble. Data points are [x, y] or [x, y, size] for bubbles.
      */

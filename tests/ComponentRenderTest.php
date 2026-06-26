@@ -492,3 +492,47 @@ it('renders an area chart with missing points', function () {
         ->toContain('[3,null,5,8,null,6]')
         ->toContain('\u0022areaStyle\u0022');
 });
+
+it('renders series-based column & bar variants', function (string $tag, string $needle) {
+    $html = Blade::render("<chart:{$tag} :series=\"\$s\" :categories=\"\$c\" />", [
+        's' => [['name' => 'A', 'data' => [5, -3, 8, 6]], ['name' => 'B', 'data' => [2, 4, 1, 9]]],
+        'c' => ['Q1', 'Q2', 'Q3', 'Q4'],
+    ]);
+
+    expect($html)->toContain('wireChart(')->toContain($needle);
+})->with([
+    ['column-stacked', '\u0022stack\u0022:\u0022total\u0022'],
+    ['bar-stacked', '\u0022stack\u0022:\u0022total\u0022'],
+    ['column-percent', '{value}%'],
+    ['bar-percent', '{value}%'],
+    ['column-negative', '#ef4444'],
+    ['column-rotated', '\u0022rotate\u0022:45'],
+    ['lollipop', '\u0022scatter\u0022'],
+]);
+
+it('renders range column & bar variants', function (string $tag) {
+    $html = Blade::render("<chart:{$tag} :categories=\"\$c\" :low=\"\$lo\" :high=\"\$hi\" />", [
+        'c' => ['Mon', 'Tue', 'Wed'],
+        'lo' => [10, 12, 9],
+        'hi' => [20, 25, 18],
+    ]);
+
+    expect($html)->toContain('wireChart(')->toContain('\u0022stack\u0022:\u0022range\u0022')->toContain('[10,13,9]');
+})->with(['column-range', 'bar-range']);
+
+it('bins values into a histogram', function () {
+    $html = Blade::render('<chart:histogram :data="$d" :bins="4" />', [
+        'd' => [1, 2, 2, 3, 3, 3, 4, 5, 8, 13],
+    ]);
+
+    expect($html)->toContain('wireChart(')->toContain('\u0022barCategoryGap\u0022');
+});
+
+it('sorts a pareto chart with a cumulative line', function () {
+    $html = Blade::render('<chart:pareto :categories="$c" :data="$d" />', [
+        'c' => ['A', 'B', 'C'],
+        'd' => [10, 40, 25],
+    ]);
+
+    expect($html)->toContain('wireChart(')->toContain('\u0022Cumulative\u0022')->toContain('\u0022yAxisIndex\u0022:1');
+});

@@ -309,3 +309,11 @@ it('gates the area-missing component without a license', function () {
     withLicense(VALID_KEY);
     expect(Blade::render('<chart:area-missing />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
 });
+
+it('gates the new column & bar components without a license', function (string $tag) {
+    withLicense(null);
+    expect(Blade::render("<chart:{$tag} />"))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render("<chart:{$tag} />"))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+})->with(['column-stacked', 'bar-stacked', 'column-percent', 'bar-percent', 'column-negative', 'column-rotated', 'column-range', 'bar-range', 'histogram', 'lollipop', 'pareto']);

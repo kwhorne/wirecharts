@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.4] - 2026-06-26
+
+Introduces the Column & bar charts family.
+
+### Added
+- New `<chart:column-stacked>` and `<chart:bar-stacked>` components — stacked vertical/horizontal bars.
+- New `<chart:column-percent>` and `<chart:bar-percent>` components — 100% stacked vertical/horizontal bars.
+- New `<chart:column-negative>` component — columns coloured by sign.
+- New `<chart:column-rotated>` component — columns with rotated category labels.
+- New `<chart:column-range>` and `<chart:bar-range>` components — floating low/high range bars.
+- New `<chart:histogram>` component — bins a flat list of values into frequency columns.
+- New `<chart:lollipop>` component — a stick-and-marker lollipop chart.
+- New `<chart:pareto>` component — sorted columns with a cumulative percentage line.
+
 ## [1.2.3] - 2026-06-26
 
 Introduces the Area charts family.
