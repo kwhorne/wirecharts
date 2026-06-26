@@ -552,3 +552,45 @@ it('renders pie variations', function (string $tag, string $needle) {
     ['pie-variable', '\u0022roseType\u0022:\u0022radius\u0022'],
     ['pie-rose', '\u0022roseType\u0022:\u0022area\u0022'],
 ]);
+
+it('renders a scatter with a regression line', function () {
+    $html = Blade::render('<chart:scatter-regression :series="$s" />', [
+        's' => [['name' => 'Obs', 'data' => [[1, 2], [2, 4], [3, 5], [4, 8], [5, 9]]]],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022scatter\u0022')
+        ->toContain('\u0022Trend\u0022')
+        ->toContain('\u0022type\u0022:\u0022dashed\u0022');
+});
+
+it('renders multi-series scatter with distinct symbols', function () {
+    $html = Blade::render('<chart:scatter-symbols :series="$s" />', [
+        's' => [
+            ['name' => 'A', 'data' => [[1, 2], [3, 4]]],
+            ['name' => 'B', 'data' => [[2, 3], [4, 5]]],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022symbol\u0022:\u0022circle\u0022')
+        ->toContain('\u0022symbol\u0022:\u0022rect\u0022');
+});
+
+it('renders a packed bubble chart', function () {
+    $html = Blade::render('<chart:packed-bubble :nodes="$n" :categories="$c" />', [
+        'n' => [
+            ['name' => 'PHP', 'value' => 80, 'category' => 'Backend'],
+            ['name' => 'Vue', 'value' => 50, 'category' => 'Frontend'],
+        ],
+        'c' => ['Backend', 'Frontend'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022type\u0022:\u0022graph\u0022')
+        ->toContain('\u0022layout\u0022:\u0022force\u0022')
+        ->toContain('\u0022symbolSize\u0022');
+});

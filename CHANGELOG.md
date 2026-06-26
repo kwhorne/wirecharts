@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.6] - 2026-06-26
+
+Introduces the Scatter & bubble family.
+
+### Added
+- New `<chart:scatter-regression>` component — a scatter plot with a least-squares trend line.
+- New `<chart:scatter-symbols>` component — a multi-series scatter using a distinct symbol per series.
+- New `<chart:packed-bubble>` component — force-packed bubbles sized by value and grouped by category.
+
 ## [1.2.5] - 2026-06-26
 
 Introduces the Pie charts family.

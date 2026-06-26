@@ -1111,6 +1111,127 @@ class Option
         ];
     }
 
+    // ---- Scatter & bubble -------------------------------------------------
+
+    /**
+     * Scatter plot with a least-squares linear regression (trend) line.
+     */
+    public static function scatterRegression(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $points = $series[0]['data'] ?? [];
+        $name = $series[0]['name'] ?? 'Data';
+
+        $n = count($points);
+        $sx = $sy = $sxy = $sxx = 0;
+        $xmin = INF;
+        $xmax = -INF;
+        foreach ($points as $p) {
+            $x = $p[0] ?? 0;
+            $y = $p[1] ?? 0;
+            $sx += $x;
+            $sy += $y;
+            $sxy += $x * $y;
+            $sxx += $x * $x;
+            $xmin = min($xmin, $x);
+            $xmax = max($xmax, $x);
+        }
+
+        $line = [];
+        $denom = $n * $sxx - $sx * $sx;
+        if ($n > 1 && $denom != 0) {
+            $slope = ($n * $sxy - $sx * $sy) / $denom;
+            $intercept = ($sy - $slope * $sx) / $n;
+            $line = [
+                [$xmin, round($intercept + $slope * $xmin, 2)],
+                [$xmax, round($intercept + $slope * $xmax, 2)],
+            ];
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => $args['legend'] ?? true],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'value', 'scale' => true],
+            'yAxis' => ['type' => 'value', 'scale' => true],
+            'series' => [
+                ['name' => $name, 'type' => 'scatter', 'symbolSize' => 10, 'data' => $points],
+                ['name' => 'Trend', 'type' => 'line', 'showSymbol' => false, 'data' => $line, 'lineStyle' => ['width' => 2, 'type' => 'dashed']],
+            ],
+        ];
+    }
+
+    /**
+     * Multi-series scatter where each series uses a distinct point symbol.
+     */
+    public static function scatterSymbols(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $legend = $args['legend'] ?? true;
+        $symbols = ['circle', 'rect', 'triangle', 'diamond', 'pin', 'arrow'];
+
+        $seriesOption = [];
+        foreach (array_values($series) as $i => $s) {
+            $seriesOption[] = array_merge([
+                'type' => 'scatter',
+                'symbol' => $symbols[$i % count($symbols)],
+                'symbolSize' => 12,
+            ], $s);
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'item'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'value', 'scale' => true],
+            'yAxis' => ['type' => 'value', 'scale' => true],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Packed bubble chart: force-packed bubbles sized by value and grouped by
+     * category, with no links.
+     */
+    public static function packedBubble(array $args): array
+    {
+        $nodes = $args['nodes'] ?? [];
+        $categories = $args['categories'] ?? [];
+
+        $maxVal = 0;
+        foreach ($nodes as $node) {
+            $maxVal = max($maxVal, $node['value'] ?? 0);
+        }
+        $scale = $maxVal > 0 ? 60 / sqrt($maxVal) : 1;
+
+        $data = array_map(function ($node) use ($scale) {
+            $value = $node['value'] ?? 0;
+
+            return array_filter([
+                'name' => $node['name'] ?? '',
+                'value' => $value,
+                'symbolSize' => max(12, sqrt($value) * $scale),
+                'category' => $node['category'] ?? null,
+            ], fn ($v) => $v !== null);
+        }, $nodes);
+
+        return [
+            'tooltip' => ['trigger' => 'item', 'formatter' => '{b}: {c}'],
+            'legend' => ['show' => ! empty($categories), 'data' => $categories],
+            'series' => [[
+                'type' => 'graph',
+                'layout' => 'force',
+                'roam' => true,
+                'draggable' => true,
+                'data' => $data,
+                'categories' => array_map(fn ($c) => ['name' => $c], $categories),
+                'force' => ['repulsion' => 80, 'gravity' => 0.2, 'edgeLength' => 10],
+                'label' => ['show' => true, 'position' => 'inside', 'fontSize' => 10],
+                'emphasis' => ['focus' => 'self'],
+            ]],
+        ];
+    }
+
     // ---- Pie variations ---------------------------------------------------
 
     /**

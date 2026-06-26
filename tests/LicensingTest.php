@@ -325,3 +325,11 @@ it('gates the new pie components without a license', function (string $tag) {
     withLicense(VALID_KEY);
     expect(Blade::render("<chart:{$tag} />"))->toContain('wireChart(')->not->toContain('wirecharts-locked');
 })->with(['pie-semi', 'pie-labels', 'pie-monochrome', 'pie-gradient', 'pie-variable', 'pie-rose']);
+
+it('gates the new scatter & bubble components without a license', function (string $tag) {
+    withLicense(null);
+    expect(Blade::render("<chart:{$tag} />"))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render("<chart:{$tag} />"))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+})->with(['scatter-regression', 'scatter-symbols', 'packed-bubble']);

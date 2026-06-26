@@ -25,6 +25,9 @@ class Catalog
      * Commercial components unlocked by a Pro license.
      */
     public const PRO = [
+        'scatter-regression',
+        'scatter-symbols',
+        'packed-bubble',
         'pie-semi',
         'pie-labels',
         'pie-monochrome',
