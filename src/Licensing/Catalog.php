@@ -25,6 +25,9 @@ class Catalog
      * Commercial components unlocked by a Pro license.
      */
     public const PRO = [
+        'combo-line-column',
+        'combo-dual-axis',
+        'combo-multi-axis',
         'scatter-regression',
         'scatter-symbols',
         'packed-bubble',

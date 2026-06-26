@@ -1111,6 +1111,121 @@ class Option
         ];
     }
 
+    // ---- Combinations -----------------------------------------------------
+
+    /**
+     * Convert a combo series item (with a friendly 'type') into an ECharts series.
+     */
+    protected static function comboItem(array $s): array
+    {
+        $type = $s['type'] ?? 'bar';
+        unset($s['type'], $s['axis']);
+
+        $item = array_merge(['type' => $type === 'area' ? 'line' : $type], $s);
+
+        if ($type === 'area') {
+            $item['areaStyle'] = (object) [];
+            $item['smooth'] = true;
+        }
+        if ($type === 'line') {
+            $item['smooth'] = $item['smooth'] ?? true;
+            $item['symbolSize'] = 7;
+            $item['lineStyle'] = ['width' => 3];
+            $item['z'] = 3;
+        }
+
+        return $item;
+    }
+
+    /**
+     * Combined line & column chart on a single axis.
+     */
+    public static function comboLineColumn(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'cross']],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories],
+            'yAxis' => ['type' => 'value'],
+            'series' => array_map(fn ($s) => static::comboItem($s), array_values($series)),
+        ];
+    }
+
+    /**
+     * Dual-axis combination: each series targets the left (0) or right (1) axis.
+     */
+    public static function comboDualAxis(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+        $axisNames = $args['axisNames'] ?? ['', ''];
+
+        $seriesOption = array_map(function ($s) {
+            $axis = $s['axis'] ?? 0;
+            $item = static::comboItem($s);
+            $item['yAxisIndex'] = $axis;
+
+            return $item;
+        }, array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'cross']],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories],
+            'yAxis' => [
+                ['type' => 'value', 'name' => $axisNames[0] ?? ''],
+                ['type' => 'value', 'name' => $axisNames[1] ?? '', 'splitLine' => ['show' => false]],
+            ],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Multiple-axis combination: each series targets one of several y-axes.
+     */
+    public static function comboMultiAxis(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+        $axes = $args['axes'] ?? ['', '', ''];
+
+        $yAxis = [];
+        foreach (array_values($axes) as $i => $name) {
+            $yAxis[] = [
+                'type' => 'value',
+                'name' => $name,
+                'position' => $i === 0 ? 'left' : 'right',
+                'offset' => $i >= 2 ? ($i - 1) * 55 : 0,
+                'splitLine' => ['show' => $i === 0],
+            ];
+        }
+
+        $seriesOption = array_map(function ($s) {
+            $axis = $s['axis'] ?? 0;
+            $item = static::comboItem($s);
+            $item['yAxisIndex'] = $axis;
+
+            return $item;
+        }, array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'cross']],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '5%', 'right' => 70, 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories],
+            'yAxis' => $yAxis,
+            'series' => $seriesOption,
+        ];
+    }
+
     // ---- Scatter & bubble -------------------------------------------------
 
     /**

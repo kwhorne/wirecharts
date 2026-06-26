@@ -594,3 +594,49 @@ it('renders a packed bubble chart', function () {
         ->toContain('\u0022layout\u0022:\u0022force\u0022')
         ->toContain('\u0022symbolSize\u0022');
 });
+
+it('renders a combined line & column chart', function () {
+    $html = Blade::render('<chart:combo-line-column :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'Revenue', 'type' => 'bar', 'data' => [120, 132, 101, 134]],
+            ['name' => 'Trend', 'type' => 'line', 'data' => [115, 125, 110, 130]],
+        ],
+        'c' => ['Q1', 'Q2', 'Q3', 'Q4'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022type\u0022:\u0022bar\u0022')
+        ->toContain('\u0022type\u0022:\u0022line\u0022');
+});
+
+it('renders a dual-axis combination', function () {
+    $html = Blade::render('<chart:combo-dual-axis :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'Rain', 'type' => 'bar', 'axis' => 0, 'data' => [20, 35, 18]],
+            ['name' => 'Temp', 'type' => 'line', 'axis' => 1, 'data' => [12, 15, 9]],
+        ],
+        'c' => ['Jan', 'Feb', 'Mar'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022yAxisIndex\u0022:1');
+});
+
+it('renders a multi-axis combination', function () {
+    $html = Blade::render('<chart:combo-multi-axis :series="$s" :categories="$c" :axes="$a" />', [
+        's' => [
+            ['name' => 'A', 'type' => 'bar', 'axis' => 0, 'data' => [2, 4, 6]],
+            ['name' => 'B', 'type' => 'line', 'axis' => 1, 'data' => [20, 40, 60]],
+            ['name' => 'C', 'type' => 'line', 'axis' => 2, 'data' => [200, 100, 300]],
+        ],
+        'c' => ['Mon', 'Tue', 'Wed'],
+        'a' => ['Units', 'Rate', 'Volume'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022yAxisIndex\u0022:2')
+        ->toContain('\u0022offset\u0022');
+});

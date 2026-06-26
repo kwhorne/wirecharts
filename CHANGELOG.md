@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.7] - 2026-06-26
+
+Introduces the Combinations family.
+
+### Added
+- New `<chart:combo-line-column>` component — mixed line and column series on one axis.
+- New `<chart:combo-dual-axis>` component — series split across a left and right y-axis.
+- New `<chart:combo-multi-axis>` component — series spread across multiple y-axes.
+
 ## [1.2.6] - 2026-06-26
 
 Introduces the Scatter & bubble family.
