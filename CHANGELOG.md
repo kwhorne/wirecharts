@@ -9,7 +9,7 @@ Each released version below corresponds to a Git tag.
 ## [1.2.1] - 2026-06-26
 
 ### Fixed
-- Corrected the release dates shown in the changelog.
+- Corrected the release date shown for 1.2.0.
 
 ## [1.2.0] - 2026-06-26
 
@@ -18,7 +18,7 @@ Introduces the Line charts family.
 ### Added
 - New `<chart:spline>` component — a smooth line where each series is marked with a distinct point symbol (circle, square, triangle, diamond, ...).
 
-## [1.1.0] - 2026-06-26
+## [1.1.0] - 2026-06-25
 
 Adds an animated clock gauge to the Pro tier.
 
@@ -28,7 +28,7 @@ Adds an animated clock gauge to the Pro tier.
 ### Fixed
 - Charts now wait for the rendering engine to finish loading before initialising, fixing blank charts when scripts load out of order.
 
-## [1.0.0] - 2026-06-26
+## [1.0.0] - 2026-06-25
 
 First public release — the full chart gallery, with a free Basics tier and a licensed Pro tier.
 
