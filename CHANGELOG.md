@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.0] - 2026-06-25
+
+Introduces the Line charts family.
+
+### Added
+- New `<chart:spline>` component — a smooth line where each series is marked with a distinct point symbol (circle, square, triangle, diamond, ...).
+
 ## [1.1.0] - 2026-06-25
 
 Adds an animated clock gauge to the Pro tier.

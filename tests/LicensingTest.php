@@ -109,3 +109,11 @@ it('verifies the changelog covers every tag', function () {
         ->assertSuccessful()
         ->expectsOutputToContain('1.1.0');
 });
+
+it('gates the spline component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:spline />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:spline />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});

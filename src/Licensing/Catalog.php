@@ -25,6 +25,7 @@ class Catalog
      * Commercial components unlocked by a Pro license.
      */
     public const PRO = [
+        'spline',
         'donut',
         'bubble',
         'gauge',

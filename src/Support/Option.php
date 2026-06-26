@@ -60,6 +60,40 @@ class Option
     }
 
     /**
+     * Spline with symbols: a smooth line where each series is marked with a
+     * distinct point symbol (circle, square, triangle, diamond, ...).
+     */
+    public static function spline(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+        $size = $args['symbolSize'] ?? 8;
+        $symbols = ['circle', 'rect', 'triangle', 'diamond', 'roundRect', 'pin', 'arrow'];
+
+        $seriesOption = [];
+        foreach (array_values($series) as $i => $s) {
+            $seriesOption[] = array_merge([
+                'type' => 'line',
+                'smooth' => true,
+                'symbol' => $symbols[$i % count($symbols)],
+                'symbolSize' => $size,
+                'showSymbol' => true,
+                'lineStyle' => ['width' => 3],
+            ], $s);
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
      * Scatter / bubble. Data points are [x, y] or [x, y, size] for bubbles.
      */
     public static function scatter(array $args, bool $bubble = false): array

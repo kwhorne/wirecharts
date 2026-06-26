@@ -126,3 +126,19 @@ it('renders an animated clock gauge', function () {
         ->toContain('\u0022type\u0022:\u0022gauge\u0022')
         ->toContain('\u0022max\u0022:12');
 });
+
+it('renders a spline with per-series symbols', function () {
+    $html = Blade::render('<chart:spline :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'A', 'data' => [1, 2, 3]],
+            ['name' => 'B', 'data' => [3, 2, 1]],
+        ],
+        'c' => ['Jan', 'Feb', 'Mar'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022smooth\u0022:true')
+        ->toContain('\u0022symbol\u0022:\u0022circle\u0022')
+        ->toContain('\u0022symbol\u0022:\u0022rect\u0022');
+});
