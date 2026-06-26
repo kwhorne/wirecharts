@@ -296,3 +296,199 @@ it('renders a spline with horizontal plot bands', function () {
         ->toContain('Moderate')
         ->toContain('\u0022smooth\u0022:true');
 });
+
+it('renders an area chart with gradient fills', function () {
+    $html = Blade::render('<chart:area-gradient :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'USA', 'data' => [120, 132, 101, 134]],
+            ['name' => 'USSR', 'data' => [220, 182, 191, 234]],
+        ],
+        'c' => ['1960', '1970', '1980', '1990'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022areaStyle\u0022')
+        ->toContain('\u0022colorStops\u0022')
+        ->toContain('\u0022smooth\u0022:true');
+});
+
+it('renders a stacked area chart', function () {
+    $html = Blade::render('<chart:area-stacked :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'Asia', 'data' => [1700, 2300, 3600, 4500]],
+            ['name' => 'Africa', 'data' => [230, 360, 640, 1200]],
+        ],
+        'c' => ['1950', '1970', '1990', '2010'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022stack\u0022:\u0022total\u0022')
+        ->toContain('\u0022areaStyle\u0022');
+});
+
+it('renders a 100% stacked area and normalises to percentages', function () {
+    $html = Blade::render('<chart:area-percent :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'A', 'data' => [10, 20, 30]],
+            ['name' => 'B', 'data' => [10, 20, 30]],
+        ],
+        'c' => ['x', 'y', 'z'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022stack\u0022:\u0022total\u0022')
+        ->toContain('\u0022max\u0022:100')
+        ->toContain('{value}%')
+        ->toContain('[50,50,50]'); // equal series -> 50% each
+});
+
+it('renders an area range band from low and high values', function () {
+    $html = Blade::render('<chart:area-range :categories="$c" :low="$lo" :high="$hi" />', [
+        'c' => ['Mon', 'Tue', 'Wed'],
+        'lo' => [10, 12, 9],
+        'hi' => [20, 25, 18],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022stack\u0022:\u0022range\u0022')
+        ->toContain('[10,13,9]')   // diff = high - low
+        ->toContain('[10,12,9]');  // low baseline
+});
+
+it('renders an animated area race', function () {
+    $html = Blade::render('<chart:area-race :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'Solar', 'data' => [10, 20, 35, 50]],
+            ['name' => 'Wind', 'data' => [5, 18, 28, 44]],
+        ],
+        'c' => ['Q1', 'Q2', 'Q3', 'Q4'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChartRace(')
+        ->toContain('@click="play()"')
+        ->toContain('\u0022areaStyle\u0022');
+});
+
+it('renders a smooth area spline', function () {
+    $html = Blade::render('<chart:areaspline :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'John', 'data' => [3, 4, 3, 5, 4, 10, 12]],
+            ['name' => 'Jane', 'data' => [1, 3, 4, 3, 3, 5, 4]],
+        ],
+        'c' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022smooth\u0022:true')
+        ->toContain('\u0022areaStyle\u0022');
+});
+
+it('renders an area chart with inverted axes', function () {
+    $html = Blade::render('<chart:area-inverted :series="$s" :categories="$c" />', [
+        's' => [['name' => 'Depth', 'data' => [5, 12, 20, 9]]],
+        'c' => ['0 m', '10 m', '20 m', '30 m'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022xAxis\u0022:{\u0022type\u0022:\u0022value\u0022}')
+        ->toContain('\u0022yAxis\u0022:{\u0022type\u0022:\u0022category\u0022')
+        ->toContain('\u0022areaStyle\u0022');
+});
+
+it('renders an area chart with negative values coloured by sign', function () {
+    $html = Blade::render('<chart:area-negative :series="$s" :categories="$c" />', [
+        's' => [['name' => 'Net', 'data' => [5, -3, 8, -6, 2]]],
+        'c' => ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022visualMap\u0022')
+        ->toContain('\u0022pieces\u0022')
+        ->toContain('\u0022areaStyle\u0022');
+});
+
+it('renders an area range with a line overlay', function () {
+    $html = Blade::render('<chart:area-range-line :categories="$c" :low="$lo" :high="$hi" :line="$ln" />', [
+        'c' => ['Mon', 'Tue', 'Wed'],
+        'lo' => [10, 12, 9],
+        'hi' => [20, 25, 18],
+        'ln' => [15, 18, 13],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022stack\u0022:\u0022range\u0022')
+        ->toContain('[10,13,9]')   // band diff
+        ->toContain('[15,18,13]'); // overlay line
+});
+
+it('renders a fan chart with nested confidence bands', function () {
+    $html = Blade::render('<chart:area-fan :categories="$c" :line="$ln" :bands="$b" />', [
+        'c' => ['Now', '+1', '+2'],
+        'ln' => [10, 11, 12],
+        'b' => [
+            ['low' => [8, 6, 4], 'high' => [12, 16, 20]],
+            ['low' => [9, 8, 7], 'high' => [11, 14, 17]],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('fan0')
+        ->toContain('fan1')
+        ->toContain('rgba(')
+        ->toContain('[10,11,12]'); // median line
+});
+
+it('renders a streamgraph via themeRiver', function () {
+    $html = Blade::render('<chart:streamgraph :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'A', 'data' => [3, 5, 8]],
+            ['name' => 'B', 'data' => [6, 4, 7]],
+        ],
+        'c' => ['Jan', 'Feb', 'Mar'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022themeRiver\u0022')
+        ->toContain('\u0022singleAxis\u0022')
+        ->toContain('[\u0022Jan\u0022,3,\u0022A\u0022]');
+});
+
+it('renders a stacked area with inverted axes', function () {
+    $html = Blade::render('<chart:area-stacked-inverted :series="$s" :categories="$c" />', [
+        's' => [
+            ['name' => 'Asia', 'data' => [1700, 2300, 3600]],
+            ['name' => 'Africa', 'data' => [230, 360, 640]],
+        ],
+        'c' => ['1950', '1970', '1990'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022stack\u0022:\u0022total\u0022')
+        ->toContain('\u0022xAxis\u0022:{\u0022type\u0022:\u0022value\u0022}')
+        ->toContain('\u0022yAxis\u0022:{\u0022type\u0022:\u0022category\u0022');
+});
+
+it('renders an area chart with missing points', function () {
+    $html = Blade::render('<chart:area-missing :series="$s" :categories="$c" />', [
+        's' => [['name' => 'Readings', 'data' => [3, null, 5, 8, null, 6]]],
+        'c' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    ]);
+
+    expect($html)
+        ->toContain('wireChart(')
+        ->toContain('\u0022connectNulls\u0022:false')
+        ->toContain('[3,null,5,8,null,6]')
+        ->toContain('\u0022areaStyle\u0022');
+});

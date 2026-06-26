@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Each released version below corresponds to a Git tag.
 
+## [1.2.3] - 2026-06-26
+
+Introduces the Area charts family.
+
+### Added
+- New `<chart:area-gradient>` component — an area chart with smooth gradient fills, optionally stacked.
+- New `<chart:area-stacked>` component — a stacked area chart showing cumulative totals and composition.
+- New `<chart:area-percent>` component — a 100% stacked area chart showing each series as a percentage of the total.
+- New `<chart:area-range>` component — a filled band between low and high values per category (e.g. min/max ranges).
+- New `<chart:area-race>` component — an animated area race that reveals each filled series progressively, with a replay control.
+- New `<chart:areaspline>` component — a smooth area spline with semi-transparent overlapping fills, optionally stacked.
+- New `<chart:area-inverted>` component — an area chart with inverted axes (category axis vertical).
+- New `<chart:area-negative>` component — an area chart with negative values coloured differently above and below zero.
+- New `<chart:area-range-line>` component — a low/high band with a line (e.g. the average) overlaid.
+- New `<chart:area-fan>` component — a fan chart with a central line and nested confidence bands for forecasts with uncertainty.
+- New `<chart:streamgraph>` component — a flowing streamgraph (themeRiver) for composition over time.
+- New `<chart:area-stacked-inverted>` component — a stacked area chart with inverted axes.
+- New `<chart:area-missing>` component — an area chart that handles missing (null) points, with optional gap bridging.
+
 ## [1.2.2] - 2026-06-26
 
 ### Added

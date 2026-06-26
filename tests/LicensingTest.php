@@ -205,3 +205,107 @@ it('gates the spline-bands component without a license', function () {
     withLicense(VALID_KEY);
     expect(Blade::render('<chart:spline-bands />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
 });
+
+it('gates the area-gradient component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-gradient />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-gradient />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-stacked component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-stacked />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-stacked />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-percent component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-percent />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-percent />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-range component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-range />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-range />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-race component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-race />'))->toContain('wirecharts-locked')->not->toContain('wireChartRace(');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-race />'))->toContain('wireChartRace(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the areaspline component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:areaspline />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:areaspline />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-inverted component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-inverted />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-inverted />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-negative component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-negative />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-negative />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-range-line component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-range-line />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-range-line />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-fan component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-fan />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-fan />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the streamgraph component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:streamgraph />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:streamgraph />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-stacked-inverted component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-stacked-inverted />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-stacked-inverted />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});
+
+it('gates the area-missing component without a license', function () {
+    withLicense(null);
+    expect(Blade::render('<chart:area-missing />'))->toContain('wirecharts-locked');
+
+    withLicense(VALID_KEY);
+    expect(Blade::render('<chart:area-missing />'))->toContain('wireChart(')->not->toContain('wirecharts-locked');
+});

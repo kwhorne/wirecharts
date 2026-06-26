@@ -552,6 +552,566 @@ class Option
     }
 
     /**
+     * Area chart with smooth gradient fills — each series fades from its colour
+     * to transparent. Optionally stacked.
+     */
+    public static function areaGradient(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $stack = $args['stack'] ?? false;
+        $legend = $args['legend'] ?? true;
+
+        $palette = [[249, 115, 22], [14, 165, 233], [34, 197, 94], [168, 85, 247], [239, 68, 68], [234, 179, 8]];
+
+        $seriesOption = [];
+        foreach (array_values($series) as $i => $s) {
+            [$r, $g, $b] = $palette[$i % count($palette)];
+
+            $item = array_merge([
+                'type' => 'line',
+                'smooth' => $smooth,
+                'showSymbol' => false,
+                'lineStyle' => ['width' => 2, 'color' => "rgb({$r},{$g},{$b})"],
+                'itemStyle' => ['color' => "rgb({$r},{$g},{$b})"],
+                'areaStyle' => [
+                    'opacity' => 1,
+                    'color' => [
+                        'type' => 'linear', 'x' => 0, 'y' => 0, 'x2' => 0, 'y2' => 1,
+                        'colorStops' => [
+                            ['offset' => 0, 'color' => "rgba({$r},{$g},{$b},0.45)"],
+                            ['offset' => 1, 'color' => "rgba({$r},{$g},{$b},0.03)"],
+                        ],
+                    ],
+                ],
+            ], $s);
+
+            if ($stack !== false) {
+                $item['stack'] = is_string($stack) ? $stack : 'total';
+            }
+
+            $seriesOption[] = $item;
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Stacked area chart: series are filled and stacked on top of one another
+     * to show cumulative totals and composition.
+     */
+    public static function areaStacked(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? false;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'stack' => 'total',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 1],
+            'areaStyle' => ['opacity' => 0.8],
+            'emphasis' => ['focus' => 'series'],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * 100% stacked area chart: each series is shown as its percentage share of
+     * the total for every category.
+     */
+    public static function areaPercent(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? false;
+        $legend = $args['legend'] ?? true;
+
+        $values = array_map(fn ($s) => array_values($s['data'] ?? []), array_values($series));
+        $count = $values ? max(array_map('count', $values)) : 0;
+
+        for ($j = 0; $j < $count; $j++) {
+            $sum = 0;
+            foreach ($values as $row) {
+                $sum += $row[$j] ?? 0;
+            }
+            foreach ($values as $i => $row) {
+                $v = $row[$j] ?? 0;
+                $values[$i][$j] = $sum > 0 ? round($v / $sum * 100, 2) : 0;
+            }
+        }
+
+        $seriesOption = [];
+        foreach (array_values($series) as $i => $s) {
+            $seriesOption[] = [
+                'name' => $s['name'] ?? '',
+                'type' => 'line',
+                'stack' => 'total',
+                'smooth' => $smooth,
+                'showSymbol' => false,
+                'lineStyle' => ['width' => 1],
+                'areaStyle' => ['opacity' => 0.8],
+                'emphasis' => ['focus' => 'series'],
+                'data' => $values[$i],
+            ];
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'valueFormatter' => '@@function (v) { return v + "%"; }@@'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value', 'max' => 100, 'axisLabel' => ['formatter' => '{value}%']],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Area range: a filled band between a low and high value per category
+     * (e.g. min/max temperature). Accepts low/high arrays or [low, high] pairs.
+     */
+    public static function areaRange(array $args): array
+    {
+        $categories = $args['categories'] ?? [];
+        $low = array_values($args['low'] ?? []);
+        $high = array_values($args['high'] ?? []);
+        $name = $args['name'] ?? 'Range';
+        $smooth = $args['smooth'] ?? true;
+
+        if (! $low && ! $high && ! empty($args['data'])) {
+            foreach ($args['data'] as $pair) {
+                $low[] = $pair[0] ?? null;
+                $high[] = $pair[1] ?? null;
+            }
+        }
+
+        $diff = [];
+        foreach ($low as $i => $l) {
+            $h = $high[$i] ?? $l;
+            $diff[] = ($l === null || $h === null) ? null : $h - $l;
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => [
+                [
+                    'name' => 'low',
+                    'type' => 'line',
+                    'stack' => 'range',
+                    'smooth' => $smooth,
+                    'showSymbol' => false,
+                    'silent' => true,
+                    'lineStyle' => ['opacity' => 0],
+                    'areaStyle' => ['opacity' => 0],
+                    'data' => $low,
+                ],
+                [
+                    'name' => $name,
+                    'type' => 'line',
+                    'stack' => 'range',
+                    'smooth' => $smooth,
+                    'showSymbol' => false,
+                    'lineStyle' => ['opacity' => 0],
+                    'areaStyle' => ['opacity' => 0.4],
+                    'data' => $diff,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Area race: a multi-series filled area whose points are revealed
+     * progressively (animated client-side), each labelled at its leading end.
+     */
+    public static function areaRace(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+
+        $formatter = '@@function (params) { return params.seriesName; }@@';
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 2],
+            'areaStyle' => ['opacity' => 0.4],
+            'emphasis' => ['focus' => 'series'],
+            'endLabel' => ['show' => true, 'formatter' => $formatter, 'fontWeight' => 'bold'],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => 90, 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Area spline: a smooth filled area chart with semi-transparent overlapping
+     * series. Optionally stacked.
+     */
+    public static function areaspline(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $stack = $args['stack'] ?? false;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(function ($s) use ($stack) {
+            $item = array_merge([
+                'type' => 'line',
+                'smooth' => true,
+                'showSymbol' => false,
+                'lineStyle' => ['width' => 2],
+                'areaStyle' => ['opacity' => 0.4],
+            ], $s);
+
+            if ($stack !== false) {
+                $item['stack'] = is_string($stack) ? $stack : 'total';
+            }
+
+            return $item;
+        }, array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Area chart with inverted axes: filled areas drawn with the category axis
+     * running vertically and the value axis horizontally.
+     */
+    public static function areaInverted(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 2],
+            'areaStyle' => ['opacity' => 0.4],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'value'],
+            'yAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Area chart with negative values: the line and fill are coloured
+     * differently above and below the zero line.
+     */
+    public static function areaNegative(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $legend = $args['legend'] ?? false;
+        $positive = $args['positiveColor'] ?? '#22c55e';
+        $negative = $args['negativeColor'] ?? '#ef4444';
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 2],
+            'areaStyle' => ['opacity' => 0.3],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'visualMap' => [
+                'show' => false,
+                'dimension' => 1,
+                'pieces' => [
+                    ['lte' => 0, 'color' => $negative],
+                    ['gt' => 0, 'color' => $positive],
+                ],
+            ],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Area range with a line overlay: a filled low/high band plus a line
+     * (e.g. the average) drawn on top.
+     */
+    public static function areaRangeLine(array $args): array
+    {
+        $categories = $args['categories'] ?? [];
+        $low = array_values($args['low'] ?? []);
+        $high = array_values($args['high'] ?? []);
+        $line = array_values($args['line'] ?? []);
+        $rangeName = $args['rangeName'] ?? 'Range';
+        $lineName = $args['lineName'] ?? 'Average';
+        $smooth = $args['smooth'] ?? true;
+
+        $diff = [];
+        foreach ($low as $i => $l) {
+            $h = $high[$i] ?? $l;
+            $diff[] = ($l === null || $h === null) ? null : $h - $l;
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => true],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 40, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => [
+                [
+                    'name' => 'low',
+                    'type' => 'line',
+                    'stack' => 'range',
+                    'smooth' => $smooth,
+                    'showSymbol' => false,
+                    'silent' => true,
+                    'lineStyle' => ['opacity' => 0],
+                    'areaStyle' => ['opacity' => 0],
+                    'data' => $low,
+                ],
+                [
+                    'name' => $rangeName,
+                    'type' => 'line',
+                    'stack' => 'range',
+                    'smooth' => $smooth,
+                    'showSymbol' => false,
+                    'lineStyle' => ['opacity' => 0],
+                    'areaStyle' => ['opacity' => 0.3],
+                    'data' => $diff,
+                ],
+                [
+                    'name' => $lineName,
+                    'type' => 'line',
+                    'smooth' => $smooth,
+                    'showSymbol' => false,
+                    'lineStyle' => ['width' => 3],
+                    'data' => $line,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Fan chart: a central line surrounded by nested confidence bands that fan
+     * out with growing uncertainty. Each band has its own low/high arrays.
+     */
+    public static function areaFan(array $args): array
+    {
+        $categories = $args['categories'] ?? [];
+        $line = array_values($args['line'] ?? []);
+        $bands = $args['bands'] ?? [];
+        $lineName = $args['lineName'] ?? 'Median';
+        $smooth = $args['smooth'] ?? true;
+        [$r, $g, $b] = $args['color'] ?? [249, 115, 22];
+
+        $series = [];
+
+        foreach (array_values($bands) as $k => $band) {
+            $low = array_values($band['low'] ?? []);
+            $high = array_values($band['high'] ?? []);
+            $opacity = $band['opacity'] ?? (0.12 + $k * 0.12);
+
+            $diff = [];
+            foreach ($low as $i => $l) {
+                $h = $high[$i] ?? $l;
+                $diff[] = ($l === null || $h === null) ? null : $h - $l;
+            }
+
+            $stack = "fan{$k}";
+
+            $series[] = [
+                'name' => "fan-low-{$k}",
+                'type' => 'line',
+                'stack' => $stack,
+                'smooth' => $smooth,
+                'showSymbol' => false,
+                'silent' => true,
+                'lineStyle' => ['opacity' => 0],
+                'areaStyle' => ['opacity' => 0],
+                'data' => $low,
+            ];
+            $series[] = [
+                'name' => $band['name'] ?? ('Band '.($k + 1)),
+                'type' => 'line',
+                'stack' => $stack,
+                'smooth' => $smooth,
+                'showSymbol' => false,
+                'lineStyle' => ['opacity' => 0],
+                'areaStyle' => ['color' => "rgba({$r},{$g},{$b},{$opacity})"],
+                'data' => $diff,
+            ];
+        }
+
+        $series[] = [
+            'name' => $lineName,
+            'type' => 'line',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 2, 'color' => "rgb({$r},{$g},{$b})"],
+            'data' => $line,
+        ];
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => false],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $series,
+        ];
+    }
+
+    /**
+     * Streamgraph: a flowing stacked area displaced around a central baseline,
+     * rendered with the themeRiver series.
+     */
+    public static function streamgraph(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $legend = $args['legend'] ?? true;
+
+        $names = [];
+        $data = [];
+        foreach (array_values($series) as $s) {
+            $name = $s['name'] ?? '';
+            $names[] = $name;
+            foreach (array_values($s['data'] ?? []) as $i => $v) {
+                $data[] = [$categories[$i] ?? $i, $v, $name];
+            }
+        }
+
+        return [
+            'tooltip' => ['trigger' => 'axis', 'axisPointer' => ['type' => 'line']],
+            'legend' => ['show' => $legend, 'data' => $names],
+            'singleAxis' => [
+                'type' => 'category',
+                'data' => $categories,
+                'boundaryGap' => false,
+                'top' => 40,
+                'bottom' => 30,
+            ],
+            'series' => [[
+                'type' => 'themeRiver',
+                'emphasis' => ['focus' => 'self'],
+                'label' => ['show' => false],
+                'data' => $data,
+            ]],
+        ];
+    }
+
+    /**
+     * Stacked area chart with inverted axes: filled, stacked series drawn with
+     * the category axis running vertically.
+     */
+    public static function areaStackedInverted(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? false;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'stack' => 'total',
+            'smooth' => $smooth,
+            'showSymbol' => false,
+            'lineStyle' => ['width' => 1],
+            'areaStyle' => ['opacity' => 0.8],
+            'emphasis' => ['focus' => 'series'],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'value'],
+            'yAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
+     * Area chart with missing points: null values leave a gap, or are bridged
+     * when connectNulls is enabled.
+     */
+    public static function areaMissing(array $args): array
+    {
+        $series = static::normalizeSeries($args['series'] ?? []);
+        $categories = $args['categories'] ?? [];
+        $smooth = $args['smooth'] ?? true;
+        $connectNulls = $args['connectNulls'] ?? false;
+        $legend = $args['legend'] ?? true;
+
+        $seriesOption = array_map(fn ($s) => array_merge([
+            'type' => 'line',
+            'smooth' => $smooth,
+            'connectNulls' => $connectNulls,
+            'showSymbol' => true,
+            'symbolSize' => 5,
+            'lineStyle' => ['width' => 2],
+            'areaStyle' => ['opacity' => 0.4],
+        ], $s), array_values($series));
+
+        return [
+            'tooltip' => ['trigger' => 'axis'],
+            'legend' => ['show' => $legend],
+            'grid' => ['left' => '3%', 'right' => '4%', 'bottom' => '3%', 'top' => $legend ? 40 : 16, 'containLabel' => true],
+            'xAxis' => ['type' => 'category', 'data' => $categories, 'boundaryGap' => false],
+            'yAxis' => ['type' => 'value'],
+            'series' => $seriesOption,
+        ];
+    }
+
+    /**
      * Scatter / bubble. Data points are [x, y] or [x, y, size] for bubbles.
      */
     public static function scatter(array $args, bool $bubble = false): array
